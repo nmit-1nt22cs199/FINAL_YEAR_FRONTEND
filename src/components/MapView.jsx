@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { connectSocket } from "../socketConnection";
 
-const API_BASE = import.meta.env.VITE_API_URL+"/api";
+const API_BASE = import.meta.env.VITE_API_URL + "/api";
 
 export default function MapView({
   followVehicleId = null,
@@ -287,7 +287,7 @@ export default function MapView({
   return (
     <div
       id="ola-map"
-      className="w-full sm:h-[600px] md:h-full rounded-xl mt-16"
+      className="w-full h-[100%] sm:h-[500px] md:h-[600px] lg:h-full rounded-xl mt-12 sm:mt-14 md:mt-16"
       style={{ borderRadius: "12px" }}
     ></div>
   );

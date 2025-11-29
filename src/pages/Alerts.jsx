@@ -115,10 +115,10 @@ export default function Alerts() {
   };
 
   return (
-    <div className="h-full bg-gradient-to-br from-slate-50 to-slate-100 p-6 md:p-12">
+    <div className="h-full bg-gradient-to-br from-slate-50 to-slate-100 p-4 sm:p-6 md:p-12">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">Alerts</h1>
-        <p className="text-slate-600">
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">Alerts</h1>
+        <p className="text-sm sm:text-base text-slate-600">
           {filteredAlerts.length} {filteredAlerts.length === 1 ? "alert" : "alerts"}
           {filter !== 'all' && ` (${filter})`}
           {vehicleFilter !== 'all' && ` for ${vehicleFilter}`}
@@ -126,14 +126,14 @@ export default function Alerts() {
       </div>
 
       {/* Filters */}
-      <div className="max-w-4xl mx-auto mb-6 flex flex-wrap gap-4">
+      <div className="max-w-4xl mx-auto mb-6 flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:gap-4">
         <div className="flex items-center gap-2">
           <Filter className="w-4 h-4 text-slate-500" />
-          <span className="text-sm font-medium text-slate-700">Status:</span>
+          <span className="text-xs sm:text-sm font-medium text-slate-700">Status:</span>
           <select
             value={filter}
             onChange={(e) => handleFilterChange(e.target.value)}
-            className="px-3 py-1.5 text-sm border border-slate-300 rounded-lg bg-white hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+            className="flex-1 sm:flex-none px-3 py-1.5 text-xs sm:text-sm border border-slate-300 rounded-lg bg-white hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
           >
             <option value="all">All Alerts</option>
             <option value="unacknowledged">Unacknowledged</option>
@@ -142,11 +142,11 @@ export default function Alerts() {
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-slate-700">Vehicle:</span>
+          <span className="text-xs sm:text-sm font-medium text-slate-700">Vehicle:</span>
           <select
             value={vehicleFilter}
             onChange={(e) => handleVehicleFilterChange(e.target.value)}
-            className="px-3 py-1.5 text-sm border border-slate-300 rounded-lg bg-white hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+            className="flex-1 sm:flex-none px-3 py-1.5 text-xs sm:text-sm border border-slate-300 rounded-lg bg-white hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
           >
             <option value="all">All Vehicles</option>
             {uniqueVehicles.map(vehicleId => (
@@ -155,12 +155,12 @@ export default function Alerts() {
           </select>
         </div>
 
-        <div className="flex items-center gap-2 ml-auto">
-          <span className="text-sm font-medium text-slate-700">Per page:</span>
+        <div className="flex items-center gap-2 sm:ml-auto">
+          <span className="text-xs sm:text-sm font-medium text-slate-700">Per page:</span>
           <select
             value={itemsPerPage}
             onChange={(e) => handleItemsPerPageChange(e.target.value)}
-            className="px-3 py-1.5 text-sm border border-slate-300 rounded-lg bg-white hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+            className="flex-1 sm:flex-none px-3 py-1.5 text-xs sm:text-sm border border-slate-300 rounded-lg bg-white hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
           >
             <option value="5">5</option>
             <option value="10">10</option>
@@ -193,7 +193,7 @@ export default function Alerts() {
               return (
                 <div
                   key={alert._id}
-                  className={`flex gap-4 items-start p-4 rounded-lg border transition-all duration-200 ${config.bgColor} ${config.borderColor} ${alert.acknowledged ? 'opacity-60' : ''
+                  className={`flex flex-col sm:flex-row gap-3 sm:gap-4 items-start p-3 sm:p-4 rounded-lg border transition-all duration-200 ${config.bgColor} ${config.borderColor} ${alert.acknowledged ? 'opacity-60' : ''
                     }`}
                 >
                   <IconComponent className={`flex-shrink-0 w-5 h-5 mt-0.5 ${config.iconColor}`} />
@@ -225,7 +225,7 @@ export default function Alerts() {
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
                     {!alert.acknowledged && (
                       <button
                         onClick={() => handleAcknowledge(alert._id)}
@@ -260,19 +260,19 @@ export default function Alerts() {
 
             {/* Pagination Controls */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-between pt-6 pb-2 px-4 bg-white rounded-lg border border-slate-200">
-                <div className="text-sm text-slate-600">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-6 pb-2 px-4 bg-white rounded-lg border border-slate-200">
+                <div className="text-xs sm:text-sm text-slate-600">
                   Showing <span className="font-medium">{startIndex + 1}</span> to{' '}
                   <span className="font-medium">{Math.min(endIndex, filteredAlerts.length)}</span> of{' '}
                   <span className="font-medium">{filteredAlerts.length}</span> alerts
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto">
                   {/* First Page */}
                   <button
                     onClick={() => setCurrentPage(1)}
                     disabled={currentPage === 1}
-                    className="p-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    className="p-1.5 sm:p-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                     title="First page"
                   >
                     <ChevronsLeft className="w-4 h-4 text-slate-600" />
@@ -282,7 +282,7 @@ export default function Alerts() {
                   <button
                     onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                     disabled={currentPage === 1}
-                    className="p-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    className="p-1.5 sm:p-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                     title="Previous page"
                   >
                     <ChevronLeft className="w-4 h-4 text-slate-600" />
@@ -310,9 +310,9 @@ export default function Alerts() {
                             )}
                             <button
                               onClick={() => setCurrentPage(page)}
-                              className={`min-w-[2.5rem] px-3 py-2 rounded-lg text-sm font-medium transition-all ${currentPage === page
-                                  ? 'bg-blue-600 text-white shadow-sm'
-                                  : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-50'
+                              className={`min-w-[2rem] sm:min-w-[2.5rem] px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${currentPage === page
+                                ? 'bg-blue-600 text-white shadow-sm'
+                                : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-50'
                                 }`}
                             >
                               {page}
@@ -326,7 +326,7 @@ export default function Alerts() {
                   <button
                     onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                     disabled={currentPage === totalPages}
-                    className="p-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    className="p-1.5 sm:p-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                     title="Next page"
                   >
                     <ChevronRight className="w-4 h-4 text-slate-600" />
@@ -336,7 +336,7 @@ export default function Alerts() {
                   <button
                     onClick={() => setCurrentPage(totalPages)}
                     disabled={currentPage === totalPages}
-                    className="p-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    className="p-1.5 sm:p-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                     title="Last page"
                   >
                     <ChevronsRight className="w-4 h-4 text-slate-600" />

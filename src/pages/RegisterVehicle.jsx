@@ -46,9 +46,9 @@ export default function RegisterVehicle() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 pt-24 pb-20 flex items-start justify-center px-4">
+    <div className="min-h-screen bg-slate-950 pt-20 sm:pt-24 pb-12 sm:pb-20 flex items-start justify-center px-4">
       <main className="w-full max-w-md"> {/* slightly narrower */}
-        <div className="bg-slate-900/80 border border-cyan-500/30 rounded-xl p-6 shadow-lg"> {/* smaller padding */}
+        <div className="bg-slate-900/80 border border-cyan-500/30 rounded-xl p-5 sm:p-6 shadow-lg"> {/* smaller padding */}
           <form onSubmit={handleSubmit} className="space-y-4"> {/* closer fields */}
             {[
               { label: 'Vehicle ID', name: 'vehicleId', placeholder: 'e.g., VH001', type: 'text' },
@@ -80,8 +80,8 @@ export default function RegisterVehicle() {
             {message.text && (
               <div
                 className={`p-3 rounded-lg ml-auto w-fit ${message.type === 'success'
-                    ? 'bg-green-500/20 border border-green-500/50 text-green-400'
-                    : 'bg-red-500/20 border border-red-500/50 text-red-400'
+                  ? 'bg-green-500/20 border border-green-500/50 text-green-400'
+                  : 'bg-red-500/20 border border-red-500/50 text-red-400'
                   }`}
               >
                 <p className="text-sm font-medium">{message.text}</p>
