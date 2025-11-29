@@ -82,7 +82,7 @@ export default function Navigate({ origin, destination, waypoints = [] }) {
         const res = await fetch(url, {
           method: "POST",
           headers: {
-            "X-Request-Id": import.meta.env.SECRETID,
+            "X-Request-Id": import.meta.env.VITE_SECRETID,
           },
         });
 

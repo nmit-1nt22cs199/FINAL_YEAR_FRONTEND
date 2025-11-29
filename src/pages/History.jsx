@@ -15,10 +15,10 @@ export default function History() {
   // Fetch vehicles list on mount
   useEffect(() => {
     const fetchVehicles = async () => {
-      console.log('🚗 Fetching vehicles from /api/vehicles...');
+      console.log(' Fetching vehicles from /api/vehicles...');
       try {
         const res = await API.get("/vehicles");
-        console.log('✅ Vehicles response:', res.data);
+        console.log(' Vehicles response:', res.data);
 
         // Backend returns { status: 'ok', data: [...] }
         // API wrapper wraps it in { data: {...} }
