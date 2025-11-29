@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-const API_BASE = 'http://localhost:3000/api';
+const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:3000') + '/api';
 
 export default function RegisterVehicle() {
   const [formData, setFormData] = useState({
@@ -79,11 +79,10 @@ export default function RegisterVehicle() {
 
             {message.text && (
               <div
-                className={`p-3 rounded-lg ml-auto w-fit ${
-                  message.type === 'success'
+                className={`p-3 rounded-lg ml-auto w-fit ${message.type === 'success'
                     ? 'bg-green-500/20 border border-green-500/50 text-green-400'
                     : 'bg-red-500/20 border border-red-500/50 text-red-400'
-                }`}
+                  }`}
               >
                 <p className="text-sm font-medium">{message.text}</p>
               </div>

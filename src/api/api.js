@@ -2,7 +2,7 @@
 export const OLA_MAPS_API_KEY = import.meta.env.VITE_OLA_MAPS_API_KEY || '';
 
 // Backend API base URL
-const API_BASE_URL = import.meta.env.VITE_API_URL
+const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3000') + '/api';
 
 // Lightweight API wrapper that mirrors an Axios-like shape { data }
 // It uses the browser fetch API and returns { data } on success or
@@ -23,13 +23,13 @@ export const API = {
       }
 
       const data = await res.json();
-      console.log(`✅ API.get success:`, data);
+      console.log(` API.get success:`, data);
 
       // If backend returns empty array/object, fallback to dummy data to keep UI alive while offline
       if (!data || (Array.isArray(data) && data.length === 0)) return getDummyFor(path);
       return { data };
     } catch (err) {
-      console.error('❌ API.get error', err);
+      console.error(' API.get error', err);
       // Return sensible dummy data when offline or fetch fails
       return getDummyFor(path);
     }

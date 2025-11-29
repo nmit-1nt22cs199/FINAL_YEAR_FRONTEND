@@ -13,7 +13,7 @@ export function initSocket() {
   // Create socket with websocket-only transport per backend requirement
   socket = io(SOCKET_URL, {
     path: SOCKET_PATH,
-    transports: ['websocket'],
+    transports: ['polling', 'websocket'],
     reconnection: true,
     reconnectionAttempts: Infinity,
     reconnectionDelay: 1000,

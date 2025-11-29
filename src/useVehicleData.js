@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { connectSocket } from './socketConnection';
 
-const API_BASE = import.meta.env.VITE_API_URL;
+const API_BASE = import.meta.env.VITE_API_URL+'/api';
 
 export default function useVehicleData() {
     const [vehicles, setVehicles] = useState([]);
