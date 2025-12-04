@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { connectSocket } from './socketConnection';
 
-const API_BASE = import.meta.env.VITE_API_URL+'/api';
+const API_BASE = import.meta.env.VITE_API_URL + '/api';
 
 export default function useVehicleData() {
     const [vehicles, setVehicles] = useState([]);
@@ -81,12 +81,12 @@ export default function useVehicleData() {
             setAlerts(prev => [alert, ...prev]);
         });
 
-        socket.on('alert:acked', (data) => {
-            console.log('[useVehicleData] ✓ Alert acknowledged:', data);
+        socket.on('alert:acked', (updatedAlert) => {
+            console.log('[useVehicleData] ✓ Alert acknowledged:', updatedAlert);
             setAlerts(prev =>
                 prev.map(a =>
-                    a._id === data.alertId
-                        ? { ...a, acknowledged: true, acknowledgedAt: data.acknowledgedAt }
+                    a._id === updatedAlert._id
+                        ? updatedAlert
                         : a
                 )
             );
@@ -119,7 +119,7 @@ export default function useVehicleData() {
     console.log('[useVehicleData] 🚗 Combined vehicles with telemetry:', vehiclesWithTelemetry);
 
     // Function to acknowledge an alert
-    const acknowledgeAlert = async (alertId) => {
+    const acknowledgeAlert = async (alertId, acknowledgedBy, note) => {
         try {
             console.log('[useVehicleData] 🔔 Acknowledging alert:', alertId);
 
@@ -127,7 +127,8 @@ export default function useVehicleData() {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json'
-                }
+                },
+                body: JSON.stringify({ acknowledgedBy, note })
             });
 
             if (!response.ok) {
@@ -141,7 +142,13 @@ export default function useVehicleData() {
             setAlerts(prev =>
                 prev.map(a =>
                     a._id === alertId
-                        ? { ...a, acknowledged: true, acknowledgedAt: new Date().toISOString() }
+                        ? {
+                            ...a,
+                            acknowledged: true,
+                            acknowledgedBy,
+                            acknowledgmentNote: note,
+                            acknowledgedAt: new Date().toISOString()
+                        }
                         : a
                 )
             );
