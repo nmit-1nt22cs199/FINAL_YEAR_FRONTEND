@@ -1,38 +1,8 @@
-'use client'
-
 import { useEffect, useState } from "react";
-import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import VehicleCard from '../components/VehicleCard.jsx'
 import useVehicleData from '../useVehicleData';
 
-// Mock data for projects
-const projectData = [
-  { name: "Q1 Progress", completed: 65, remaining: 35 },
-  { name: "Q2 Progress", completed: 78, remaining: 22 },
-  { name: "Q3 Progress", completed: 92, remaining: 8 },
-];
 
-const taskMetrics = [
-  { month: "Jan", completed: 24, pending: 10, overdue: 2 },
-  { month: "Feb", completed: 28, pending: 8, overdue: 1 },
-  { month: "Mar", completed: 32, pending: 6, overdue: 0 },
-  { month: "Apr", completed: 35, pending: 5, overdue: 1 },
-  { month: "May", completed: 38, pending: 4, overdue: 0 },
-  { month: "Jun", completed: 42, pending: 3, overdue: 0 },
-];
-
-const teamData = [
-  { name: "Active", value: 12, color: "hsl(200 100% 50%)" },
-  { name: "On Break", value: 3, color: "hsl(280 100% 50%)" },
-  { name: "Offline", value: 2, color: "hsl(0 100% 50%)" },
-];
-
-const projects = [
-  { id: 1, name: "Website Redesign", progress: 75, status: "In Progress", team: 5 },
-  { id: 2, name: "Mobile App", progress: 45, status: "In Progress", team: 8 },
-  { id: 3, name: "API Integration", progress: 90, status: "Near Complete", team: 3 },
-  { id: 4, name: "Database Migration", progress: 60, status: "In Progress", team: 4 },
-];
 
 export default function Dashboard() {
   const { vehicles, loading, error } = useVehicleData();
@@ -197,79 +167,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Project Metrics Section */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
-          {[
-            { label: "Active Projects", value: "8", icon: "📊" },
-            { label: "Tasks Completed", value: "156", icon: "✓" },
-            { label: "Team Members", value: "24", icon: "👥" },
-            { label: "On Track", value: "92%", icon: "🎯" },
-          ].map((metric, i) => (
-            <div
-              key={i}
-              className="bg-gradient-to-br from-slate-900 to-slate-800 border border-cyan-500/30 rounded-lg p-4 sm:p-6 hover:border-cyan-400/60 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/20"
-            >
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-2xl">{metric.icon}</span>
-                <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></div>
-              </div>
-              <p className="text-slate-400 text-sm mb-1">{metric.label}</p>
-              <p className="text-2xl sm:text-3xl font-bold text-white">{metric.value}</p>
-            </div>
-          ))}
-        </div>
 
-        {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Task Progress Chart */}
-          {/* <div className="bg-gradient-to-br from-slate-900 to-slate-800 border border-cyan-500/30 rounded-lg p-6 hover:border-cyan-400/60 transition-all duration-300">
-            <h2 className="text-xl font-bold text-white mb-4">Monthly Task Progress</h2>
-            <div className="h-80 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={taskMetrics}>
-                  <defs>
-                    <linearGradient id="colorCompleted" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#22d3ee" stopOpacity={0.8} />
-                      <stop offset="95%" stopColor="#22d3ee" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                  <XAxis dataKey="month" stroke="#94a3b8" />
-                  <YAxis stroke="#94a3b8" />
-                  <Tooltip contentStyle={{ backgroundColor: "#1e293b", border: "1px solid #0ea5e9" }} />
-                  <Area type="monotone" dataKey="completed" stroke="#22d3ee" fillOpacity={1} fill="url(#colorCompleted)" name="Completed" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </div> */}
-
-          {/* Project Completion */}
-          {/* <div className="bg-gradient-to-br from-slate-900 to-slate-800 border border-cyan-500/30 rounded-lg p-6 hover:border-cyan-400/60 transition-all duration-300">
-            <h2 className="text-xl font-bold text-white mb-4">Project Completion Rate</h2>
-            <div className="h-80 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={projectData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                  <XAxis dataKey="name" stroke="#94a3b8" />
-                  <YAxis stroke="#94a3b8" />
-                  <Tooltip contentStyle={{ backgroundColor: "#1e293b", border: "1px solid #0ea5e9" }} />
-                  <Legend />
-                  <Bar dataKey="completed" fill="#22d3ee" name="Completed %" radius={[8, 8, 0, 0]} />
-                  <Bar dataKey="remaining" fill="#6366f1" name="Remaining %" radius={[8, 8, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div> */}
-        </div>
-
-        {/* Team & Timeline Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-
-
-
-
-
-        </div>
 
 
       </main>
