@@ -6,7 +6,7 @@ import { API } from "../api/api";
 export default function History() {
   const [vehicles, setVehicles] = useState([]);
   const [selectedVehicle, setSelectedVehicle] = useState("");
-  const [selectedDays, setSelectedDays] = useState(1);
+  const [selectedDays, setSelectedDays] = useState(0);
   const [history, setHistory] = useState([]);
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(false);
