@@ -102,7 +102,7 @@ export default function HistoryMap({ locations = [], vehicleId }) {
                         type: "line",
                         source: "route",
                         paint: {
-                            "line-color": "#007AFF",
+                            "line-color": "#000000ff",
                             "line-width": 4,
                             "line-opacity": 0.8,
                         },

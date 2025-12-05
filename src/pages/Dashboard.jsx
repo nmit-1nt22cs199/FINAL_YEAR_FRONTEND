@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import VehicleCard from '../components/VehicleCard.jsx'
+import DashboardAnalytics from '../components/DashboardAnalytics.jsx'
 import useVehicleData from '../useVehicleData';
 
 
@@ -45,7 +46,7 @@ export default function Dashboard() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-950 overflow-scroll">
+    <div className="min-h-screen bg-slate-950 overflow-y-scroll">
       {/* Decorative top gradient line */}
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent opacity-50"></div>
 
@@ -167,8 +168,8 @@ export default function Dashboard() {
           </div>
         </div>
 
-
-
+        {/* Analytics Section */}
+        <DashboardAnalytics vehicles={vehicles} />
 
       </main>
 

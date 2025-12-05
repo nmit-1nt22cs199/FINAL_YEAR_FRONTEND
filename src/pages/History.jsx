@@ -6,7 +6,7 @@ import { API } from "../api/api";
 export default function History() {
   const [vehicles, setVehicles] = useState([]);
   const [selectedVehicle, setSelectedVehicle] = useState("");
-  const [selectedDays, setSelectedDays] = useState(0);
+  const [selectedDays, setSelectedDays] = useState(0); // Default to Today
   const [history, setHistory] = useState([]);
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -15,25 +15,16 @@ export default function History() {
   // Fetch vehicles list on mount
   useEffect(() => {
     const fetchVehicles = async () => {
-      console.log(' Fetching vehicles from /api/vehicles...');
       try {
         const res = await API.get("/vehicles");
-        console.log(' Vehicles response:', res.data);
-
         const vehicleList = res.data?.data || res.data || [];
-        console.log('📋 Extracted vehicle list:', vehicleList);
-
         setVehicles(Array.isArray(vehicleList) ? vehicleList : []);
 
         if (Array.isArray(vehicleList) && vehicleList.length > 0) {
-          console.log('✅ Setting selected vehicle to:', vehicleList[0].vehicleId);
           setSelectedVehicle(vehicleList[0].vehicleId);
-        } else {
-          console.warn('⚠️ No vehicles found in response');
         }
       } catch (err) {
         console.error("❌ Error fetching vehicles:", err);
-        console.error("Error details:", err.response?.data || err.message);
       }
     };
     fetchVehicles();
@@ -41,35 +32,23 @@ export default function History() {
 
   // Fetch history when vehicle or days changes
   useEffect(() => {
-    if (!selectedVehicle) {
-      console.log('⏭️ Skipping history fetch - no vehicle selected');
-      return;
-    }
+    if (!selectedVehicle) return;
 
     const fetchHistory = async () => {
-      console.log(`📍 Fetching history for ${selectedVehicle}, days: ${selectedDays}`);
       setLoading(true);
       setError(null);
 
       try {
         // Fetch location history
-        console.log(`Calling: /history/${selectedVehicle}?days=${selectedDays}`);
         const historyRes = await API.get(`/history/${selectedVehicle}?days=${selectedDays}`);
-        console.log('✅ History response:', historyRes.data);
-
-        // Extract locations array (handle nested structure)
         const locations = historyRes.data?.locations || [];
-        console.log(`   - Locations count: ${locations.length}`);
         setHistory(locations);
 
         // Fetch summary statistics
-        console.log(`Calling: /history/${selectedVehicle}/summary?days=${selectedDays}`);
         const summaryRes = await API.get(`/history/${selectedVehicle}/summary?days=${selectedDays}`);
-        console.log('✅ Summary response:', summaryRes.data);
         setSummary(summaryRes.data);
       } catch (err) {
         console.error("❌ Error fetching history:", err);
-        console.error("Error details:", err.response?.data || err.message);
         setError("Failed to load vehicle history");
         setHistory([]);
         setSummary(null);
@@ -89,169 +68,186 @@ export default function History() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 sm:p-6 md:p-12">
-      {/* Header */}
-      <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">Vehicle History</h1>
-        <p className="text-sm sm:text-base text-slate-600">View vehicle travel routes and statistics</p>
+    <div className="h-full bg-gradient-to-br from-slate-950 via-slate-900 to-slate-900 p-4 sm:p-6 lg:p-8 overflow-scroll">
+      {/* Background accent */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl opacity-20"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl opacity-20"></div>
       </div>
 
-      {/* Controls */}
-      <div className="max-w-6xl mx-auto mb-6 bg-white rounded-lg border border-slate-200 p-3 sm:p-4 shadow-sm">
-        <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 items-start sm:items-center">
-          {/* Vehicle Selector */}
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <MapPin className="w-4 h-4 text-slate-500 flex-shrink-0" />
-            <span className="text-xs sm:text-sm font-medium text-slate-700">Vehicle:</span>
-            <select
-              value={selectedVehicle}
-              onChange={(e) => setSelectedVehicle(e.target.value)}
-              className="flex-1 sm:flex-none px-3 py-2 text-xs sm:text-sm border border-slate-300 rounded-lg bg-white hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-            >
-              {vehicles.length === 0 ? (
-                <option>No vehicles available</option>
-              ) : (
-                vehicles.map((v) => (
-                  <option key={v.vehicleId} value={v.vehicleId}>
-                    {v.vehicleId}
-                  </option>
-                ))
-              )}
-            </select>
+      <div className="relative z-10 max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-lg">
+              <Clock className="w-6 h-6 text-cyan-400" />
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-bold text-white">Vehicle History</h1>
           </div>
+          <p className="text-sm sm:text-base text-slate-400">View vehicle travel routes and statistics</p>
+        </div>
 
-          {/* Date Range Selector */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
-            <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-slate-500 flex-shrink-0" />
-              <span className="text-xs sm:text-sm font-medium text-slate-700">Period:</span>
+        {/* Controls */}
+        <div className="mb-8 p-4 sm:p-6 bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 rounded-xl">
+          <div className="flex flex-col sm:flex-row flex-wrap gap-4 items-start sm:items-center">
+            {/* Vehicle Selector */}
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <MapPin className="w-4 h-4 text-slate-400 flex-shrink-0" />
+              <span className="text-sm font-medium text-slate-300">Vehicle:</span>
+              <select
+                value={selectedVehicle}
+                onChange={(e) => setSelectedVehicle(e.target.value)}
+                className="flex-1 sm:flex-none px-3 py-2 text-sm bg-slate-900/50 border border-slate-700 text-slate-200 rounded-lg hover:border-slate-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+              >
+                {vehicles.length === 0 ? (
+                  <option>No vehicles available</option>
+                ) : (
+                  vehicles.map((v) => (
+                    <option key={v.vehicleId} value={v.vehicleId}>
+                      {v.vehicleId}
+                    </option>
+                  ))
+                )}
+              </select>
             </div>
-            <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-              {dayOptions.map((option) => (
-                <button
-                  key={option.value}
-                  onClick={() => setSelectedDays(option.value)}
-                  className={`px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${selectedDays === option.value
-                    ? "bg-blue-600 text-white shadow-sm"
-                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                    }`}
-                >
-                  {option.label}
-                </button>
-              ))}
+
+            {/* Date Range Selector */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto sm:ml-auto">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                <span className="text-sm font-medium text-slate-300">Period:</span>
+              </div>
+              <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+                {dayOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => setSelectedDays(option.value)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${selectedDays === option.value
+                      ? "bg-gradient-to-r from-cyan-600 to-cyan-700 text-white shadow-lg shadow-cyan-500/20"
+                      : "bg-slate-900/50 border border-slate-700 text-slate-400 hover:bg-slate-800"
+                      }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Loading State */}
-      {loading && (
-        <div className="max-w-6xl mx-auto text-center py-12 bg-white rounded-lg border border-slate-200">
-          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-600">Loading vehicle history...</p>
-        </div>
-      )}
-
-      {/* Error State */}
-      {error && !loading && (
-        <div className="max-w-6xl mx-auto text-center py-12 bg-white rounded-lg border border-red-200">
-          <p className="text-red-600 font-medium">{error}</p>
-        </div>
-      )}
-
-      {/* Content */}
-      {!loading && !error && (
-        <div className="max-w-6xl mx-auto space-y-6">
-          {/* Statistics Cards */}
-          {summary && summary.hasData && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-              <div className="bg-white rounded-lg border border-slate-200 p-3 sm:p-4 shadow-sm">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                    <Route className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-500">Distance</p>
-                    <p className="text-lg sm:text-xl font-bold text-slate-900">{summary.distance} km</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-lg border border-slate-200 p-3 sm:p-4 shadow-sm">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
-                    <Clock className="w-5 h-5 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-500">Duration</p>
-                    <p className="text-lg sm:text-xl font-bold text-slate-900">{summary.durationFormatted}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-lg border border-slate-200 p-3 sm:p-4 shadow-sm">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
-                    <TrendingUp className="w-5 h-5 text-purple-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-500">Avg Speed</p>
-                    <p className="text-lg sm:text-xl font-bold text-slate-900">{summary.averageSpeed} km/h</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-lg border border-slate-200 p-3 sm:p-4 shadow-sm">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
-                    <MapPin className="w-5 h-5 text-orange-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-500">Data Points</p>
-                    <p className="text-lg sm:text-xl font-bold text-slate-900">{summary.pointsCount}</p>
-                  </div>
-                </div>
-              </div>
+        {/* Loading State */}
+        {loading && (
+          <div className="text-center py-16 bg-slate-800/20 backdrop-blur-xl border border-slate-700/50 rounded-xl">
+            <div className="inline-flex gap-2 mb-3">
+              <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></div>
+              <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" style={{ animationDelay: "0.2s" }}></div>
+              <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" style={{ animationDelay: "0.4s" }}></div>
             </div>
-          )}
+            <p className="text-slate-400 text-sm">Loading vehicle history...</p>
+          </div>
+        )}
 
-          {/* Map */}
-          <div className="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 shadow-sm">
-            <h2 className="text-base sm:text-lg font-semibold text-slate-900 mb-4">Travel Route</h2>
-            <HistoryMap locations={history} vehicleId={selectedVehicle} />
+        {/* Error State */}
+        {error && !loading && (
+          <div className="text-center py-12 bg-red-500/10 border border-red-500/20 rounded-xl">
+            <p className="text-red-400 font-medium">{error}</p>
+          </div>
+        )}
 
-            {history.length > 0 && summary && (
-              <div className="mt-4 pt-4 border-t border-slate-200">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm">
-                  <div>
-                    <p className="text-slate-500">Start Time</p>
-                    <p className="font-medium text-slate-900">
-                      {new Date(summary.startTime).toLocaleString()}
-                    </p>
+        {/* Content */}
+        {!loading && !error && (
+          <div className="space-y-6">
+            {/* Statistics Cards */}
+            {summary && summary.hasData && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                <div className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 rounded-xl p-4">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                      <Route className="w-5 h-5 text-blue-400" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-400">Distance</p>
+                      <p className="text-lg sm:text-xl font-bold text-white">{summary.distance} km</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-slate-500">End Time</p>
-                    <p className="font-medium text-slate-900">
-                      {new Date(summary.endTime).toLocaleString()}
-                    </p>
+                </div>
+
+                <div className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 rounded-xl p-4">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                      <Clock className="w-5 h-5 text-emerald-400" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-400">Duration</p>
+                      <p className="text-lg sm:text-xl font-bold text-white">{summary.durationFormatted}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 rounded-xl p-4">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                      <TrendingUp className="w-5 h-5 text-purple-400" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-400">Avg Speed</p>
+                      <p className="text-lg sm:text-xl font-bold text-white">{summary.averageSpeed} km/h</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 rounded-xl p-4">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center">
+                      <MapPin className="w-5 h-5 text-orange-400" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-400">Data Points</p>
+                      <p className="text-lg sm:text-xl font-bold text-white">{summary.pointsCount}</p>
+                    </div>
                   </div>
                 </div>
               </div>
             )}
-          </div>
 
-          {/* No Data Message */}
-          {history.length === 0 && !loading && (
-            <div className="bg-white rounded-lg border border-slate-200 p-12 text-center shadow-sm">
-              <MapPin className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-slate-900 mb-2">No Travel History</h3>
-              <p className="text-slate-600">
-                No location data found for {selectedVehicle} in the selected time period.
-              </p>
+            {/* Map */}
+            <div className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 rounded-xl p-4 sm:p-6">
+              <h2 className="text-base sm:text-lg font-semibold text-white mb-4">Travel Route</h2>
+              <HistoryMap locations={history} vehicleId={selectedVehicle} />
+
+              {history.length > 0 && summary && (
+                <div className="mt-4 pt-4 border-t border-slate-700/50">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm">
+                    <div>
+                      <p className="text-slate-400">Start Time</p>
+                      <p className="font-medium text-slate-200">
+                        {new Date(summary.startTime).toLocaleString()}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-slate-400">End Time</p>
+                      <p className="font-medium text-slate-200">
+                        {new Date(summary.endTime).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      )}
+
+            {/* No Data Message */}
+            {history.length === 0 && !loading && (
+              <div className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 rounded-xl p-12 text-center">
+                <MapPin className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-slate-300 mb-2">No Travel History</h3>
+                <p className="text-slate-500">
+                  No location data found for {selectedVehicle} in the selected time period.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

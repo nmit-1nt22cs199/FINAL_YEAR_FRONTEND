@@ -149,22 +149,86 @@ export default function MapView({
     const el = document.createElement("div");
     console.log(v);
     el.innerHTML = `
-    <div style="
-      position: absolute;
-      top: -20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(12, 8, 8, 0.9);
-      padding: 2px 5px;
-      font-size: 9px;
-      border-radius: 4px;
-      border: 2px solid #e0e6d8ff;
-      white-space: nowrap;
-      color: #f3efefff;
-      font-weight: 600;
-    ">
-      ${Math.round(v.speed)} km/h • ${Math.round(v.temperature)}°C ${v.fuel}% ${v.offline ? 'Offline' : 'Online'} ${v.vehicleId}
-    </div>
+    <div class="custom-marker">
+  <div class="pulse"></div>
+
+  <div class="marker-content">
+    ${Math.round(v.speed)} km/h • 
+    ${Math.round(v.temperature)}°C • 
+    ${v.fuel}% • 
+    ${v.offline ? 'Offline' : 'Online'} • 
+    ${v.vehicleId}
+  </div>
+</div>
+<style>
+.custom-marker {
+  position: relative;
+  width: max-content;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Pulse circle */
+.pulse {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  background: #e8cdcdff;       /* red pulse */
+  border-radius: 50%;
+  animation: pulseAnim 1.5s infinite;
+  z-index: 1;
+}
+
+/* Pointer arrow + info box */
+.marker-content {
+  position: relative;
+  top: 22px;
+  transform: translateX(-50%);
+  left: 50%;
+  background: #151836f2;
+  padding: 3px 8px;
+  font-size: 9px;
+  border-radius: 4px;
+  border: 2px solid #e0e6d8;
+  color: #f3efef;
+  font-weight: 600;
+  white-space: nowrap;
+  z-index: 2;
+}
+
+/* Pointer arrow */
+.marker-content::after {
+  content: "";
+  position: absolute;
+  top: -7px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 7px solid rgba(12, 8, 8, 0.95);
+}
+
+/* Pulse animation */
+@keyframes pulseAnim {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(5.4);
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(0.9);
+    opacity: 0.8;
+  }
+}
+
+}
+</style>
   `;
 
     return el;
@@ -185,7 +249,7 @@ export default function MapView({
       const map = ola.init({
         container: "ola-map",
         center: [77.5946, 12.9716],
-        zoom: 11,
+        zoom: 10,
         style:
           "https://api.olamaps.io/tiles/vector/v1/styles/default-light-standard/style.json",
       });
@@ -218,7 +282,86 @@ export default function MapView({
         existing.marker.setLngLat([lng, lat]);
 
         existing.element.querySelector("div").innerHTML =
-          ` ${Math.round(v.speed)} km/h • ${Math.round(v.temperature)}°C ${v.fuel}% ${v.offline ? 'Offline' : 'Online'} ${v.vehicleId}`;
+          `<div class="custom-marker">
+  <div class="pulse"></div>
+
+  <div class="marker-content">
+    ${Math.round(v.speed)} km/h • 
+    ${Math.round(v.temperature)}°C • 
+    ${v.fuel}% • 
+    ${v.offline ? 'Offline' : 'Online'} • 
+    ${v.vehicleId}
+  </div>
+</div>
+<style>
+.custom-marker {
+  position: relative;
+  width: max-content;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Pulse circle */
+.pulse {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  background: #ff4d4d;       /* red pulse */
+  border-radius: 50%;
+  animation: pulseAnim 1.5s infinite;
+  z-index: 1;
+}
+
+/* Pointer arrow + info box */
+.marker-content {
+  position: relative;
+  top: 22px;
+  transform: translateX(-50%);
+  left: 50%;
+  background: #151836f2;
+  padding: 3px 8px;
+  font-size: 9px;
+  border-radius: 4px;
+  border: 2px solid #e0e6d8;
+  color: #f3efef;
+  font-weight: 600;
+  white-space: nowrap;
+  z-index: 2;
+}
+
+/* Pointer arrow */
+.marker-content::after {
+  content: "";
+  position: absolute;
+  top: -7px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 7px solid rgba(12, 8, 8, 0.95);
+}
+
+/* Pulse animation */
+@keyframes pulseAnim {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.6);
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(0.9);
+    opacity: 0.8;
+  }
+}
+
+}
+</style>`;
 
         return;
       }
