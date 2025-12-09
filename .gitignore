@@ -23,4 +23,4 @@ dist-ssr
 *.sln
 *.sw?
 test-socket.js
-
+create-test-geofence.js

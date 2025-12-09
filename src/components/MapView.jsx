@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { connectSocket } from "../socketConnection";
+import { fetchGeofences } from "../api/geofenceApi";
 
 const API_BASE = import.meta.env.VITE_API_URL + "/api";
 
@@ -14,6 +15,8 @@ export default function MapView({
 
   const [isMapLoaded, setIsMapLoaded] = useState(false);
   const [vehicles, setVehicles] = useState([]);
+  const [geofences, setGeofences] = useState([]);
+  const geofenceLayersRef = useRef(new Map());
 
   // --- FETCH INITIAL VEHICLE DATA FROM BACKEND ---
   useEffect(() => {
@@ -48,6 +51,24 @@ export default function MapView({
     };
 
     fetchInitialData();
+  }, []);
+
+  // --- FETCH GEOFENCES ---
+  useEffect(() => {
+    const loadGeofences = async () => {
+      try {
+        const data = await fetchGeofences(true); // Only active geofences
+        setGeofences(data);
+        console.log('[MapView] Loaded geofences:', data);
+      } catch (error) {
+        console.error('[MapView] Error fetching geofences:', error);
+      }
+    };
+
+    loadGeofences();
+    // Refresh geofences every 30 seconds
+    const interval = setInterval(loadGeofences, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   // --- CONNECT TO SOCKET FOR REAL-TIME UPDATES ---
@@ -137,6 +158,12 @@ export default function MapView({
         }
         return prev;
       });
+    });
+
+    // Listen for geofence violations
+    socket.on('geofence:violation', (data) => {
+      console.log('[MapView] Geofence violation:', data);
+      // Visual notification can be added here if needed
     });
 
     return () => {
@@ -392,6 +419,129 @@ export default function MapView({
       }
     });
   }, [vehicles, isMapLoaded]);
+
+  // --- RENDER GEOFENCES ---
+  useEffect(() => {
+    console.log('[MapView] 🔄 Geofence render effect triggered');
+    console.log('[MapView] Map loaded:', isMapLoaded, 'Geofences:', geofences.length);
+
+    if (!mapRef.current || !isMapLoaded) {
+      console.log('[MapView] ⏸️ Waiting for map to load...');
+      return;
+    }
+
+    const map = mapRef.current;
+    console.log('[MapView] ✅ Map is ready, rendering', geofences.length, 'geofences');
+
+    // Remove old geofence layers safely
+    geofenceLayersRef.current.forEach((layerId, geofenceId) => {
+      try {
+        const borderLayerId = `${layerId}-border`;
+        if (map.getLayer(borderLayerId)) map.removeLayer(borderLayerId);
+        if (map.getLayer(layerId)) map.removeLayer(layerId);
+        if (map.getSource(layerId)) map.removeSource(layerId);
+      } catch (error) {
+        console.warn(`[MapView] ⚠️ Error removing layer ${layerId}:`, error);
+      }
+    });
+    geofenceLayersRef.current.clear();
+
+    // Add new geofence layers
+    geofences.forEach((geofence, index) => {
+      console.log(`[MapView] 📍 Processing geofence ${index + 1}/${geofences.length}:`, geofence.name);
+      console.log('  Type:', geofence.type, 'Center:', geofence.center, 'Radius:', geofence.radius);
+
+      if (geofence.type === 'circle' && geofence.center && geofence.radius) {
+        const layerId = `geofence-${geofence._id}`;
+        const sourceId = layerId;
+
+        try {
+          // Create circle polygon
+          const radiusInKm = geofence.radius / 1000;
+          const points = 64;
+          const coordinates = [];
+
+          for (let i = 0; i <= points; i++) {
+            const angle = (i * 360) / points;
+            const lat = geofence.center.lat + (radiusInKm / 111) * Math.cos((angle * Math.PI) / 180);
+            const lng = geofence.center.lng + (radiusInKm / (111 * Math.cos((geofence.center.lat * Math.PI) / 180))) * Math.sin((angle * Math.PI) / 180);
+            coordinates.push([lng, lat]);
+          }
+
+          console.log(`  Generated ${coordinates.length} coordinates for circle`);
+
+          // Add source
+          if (!map.getSource(sourceId)) {
+            map.addSource(sourceId, {
+              type: 'geojson',
+              data: {
+                type: 'Feature',
+                geometry: {
+                  type: 'Polygon',
+                  coordinates: [coordinates]
+                },
+                properties: {
+                  name: geofence.name,
+                  color: geofence.color
+                }
+              }
+            });
+            console.log(`  ✅ Added source: ${sourceId}`);
+          } else {
+            console.log(`  ⏭️ Source already exists: ${sourceId}`);
+          }
+
+          // Add fill layer
+          if (!map.getLayer(layerId)) {
+            map.addLayer({
+              id: layerId,
+              type: 'fill',
+              source: sourceId,
+              paint: {
+                'fill-color': geofence.color || '#3b82f6',
+                'fill-opacity': 0.3
+              }
+            });
+            console.log(`  ✅ Added fill layer: ${layerId}`);
+          } else {
+            console.log(`  ⏭️ Fill layer already exists: ${layerId}`);
+          }
+
+          // Add border layer
+          const borderLayerId = `${layerId}-border`;
+          if (!map.getLayer(borderLayerId)) {
+            map.addLayer({
+              id: borderLayerId,
+              type: 'line',
+              source: sourceId,
+              paint: {
+                'line-color': geofence.color || '#3b82f6',
+                'line-width': 4,
+                'line-opacity': 1
+              }
+            });
+            console.log(`  ✅ Added border layer: ${borderLayerId}`);
+          } else {
+            console.log(`  ⏭️ Border layer already exists: ${borderLayerId}`);
+          }
+
+          geofenceLayersRef.current.set(geofence._id, layerId);
+          console.log(`  🎉 Successfully rendered geofence: ${geofence.name}`);
+        } catch (error) {
+          console.error(`  ❌ Error adding geofence ${geofence.name}:`, error);
+          console.error('  Full error:', error.stack);
+        }
+      } else {
+        console.log(`  ⚠️ Skipping geofence (invalid data):`, {
+          type: geofence.type,
+          hasCenter: !!geofence.center,
+          hasRadius: !!geofence.radius
+        });
+      }
+    });
+
+    console.log('[MapView] ✅ Geofence rendering complete!');
+  }, [geofences, isMapLoaded]);
 
   // --- FOLLOW VEHICLE ---
   useEffect(() => {

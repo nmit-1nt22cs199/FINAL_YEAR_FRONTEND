@@ -3,12 +3,16 @@ import { io } from "socket.io-client";
 
 let socket = null;
 
-export function connectSocket({ url = import.meta.env.VITE_API_URL , path = "/api/socket", opts = {} } = {}) {
+export function connectSocket({ url = import.meta.env.VITE_API_URL, path = "/api/socket", opts = {} } = {}) {
   if (socket && socket.connected) return socket;
 
   socket = io(url, {
     path,
-    transports: ["websocket", "polling"],
+    transports: ["polling", "websocket"], // Polling first for Render compatibility
+    reconnection: true,
+    reconnectionDelay: 1000,
+    reconnectionAttempts: 5,
+    timeout: 20000,
     ...opts,
   });
 

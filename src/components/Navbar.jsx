@@ -8,6 +8,7 @@ export default function Navbar({ currentPage, setPage, onLogout }) {
     { id: 'dashboard', label: 'Dashboard', icon: '' },
     { id: 'register', label: 'Register', icon: '' },
     { id: 'track', label: 'Live Tracking', icon: '' },
+    { id: 'geofences', label: 'Geofences', icon: '' },
     { id: 'alerts', label: 'Alerts', icon: '' },
     { id: 'history', label: 'History', icon: '' },
   ];

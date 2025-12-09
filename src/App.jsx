@@ -4,6 +4,7 @@ import LiveTracking from './pages/LiveTracking';
 import RegisterVehicle from './pages/RegisterVehicle';
 import Alerts from './pages/Alerts';
 import History from './pages/History';
+import Geofences from './pages/Geofences';
 import Login from './pages/Login';
 import Navbar from './components/Navbar';
 
@@ -59,6 +60,7 @@ export default function App() {
       {page === 'track' && <LiveTracking />}
       {page === 'alerts' && <Alerts />}
       {page === 'history' && <History />}
+      {page === 'geofences' && <Geofences />}
     </div>
   );
 }
