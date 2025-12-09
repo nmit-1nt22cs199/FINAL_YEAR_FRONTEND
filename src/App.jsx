@@ -7,6 +7,7 @@ import History from './pages/History';
 import Geofences from './pages/Geofences';
 import Login from './pages/Login';
 import Navbar from './components/Navbar';
+import { VehicleProvider } from './context/VehicleContext';
 
 export default function App() {
   const [page, setPage] = useState('dashboard');
@@ -52,15 +53,17 @@ export default function App() {
 
   // Show main app if authenticated
   return (
-    <div className="flex flex-col h-screen">
-      <Navbar currentPage={page} setPage={setPage} onLogout={handleLogout} />
+    <VehicleProvider>
+      <div className="flex flex-col h-screen">
+        <Navbar currentPage={page} setPage={setPage} onLogout={handleLogout} />
 
-      {page === 'dashboard' && <Dashboard />}
-      {page === 'register' && <RegisterVehicle />}
-      {page === 'track' && <LiveTracking />}
-      {page === 'alerts' && <Alerts />}
-      {page === 'history' && <History />}
-      {page === 'geofences' && <Geofences />}
-    </div>
+        {page === 'dashboard' && <Dashboard />}
+        {page === 'register' && <RegisterVehicle />}
+        {page === 'track' && <LiveTracking />}
+        {page === 'alerts' && <Alerts />}
+        {page === 'history' && <History />}
+        {page === 'geofences' && <Geofences />}
+      </div>
+    </VehicleProvider>
   );
 }

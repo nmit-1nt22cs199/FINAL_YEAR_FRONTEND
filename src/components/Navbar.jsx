@@ -1,8 +1,25 @@
 import { LogOut, Menu, X } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import useVehicleData from '../useVehicleData';
 
 export default function Navbar({ currentPage, setPage, onLogout }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { alerts } = useVehicleData();
+  const [isNewAlert, setIsNewAlert] = useState(false);
+
+  // Track previous count to detect increases
+  const unacknowledgedCount = alerts.filter(a => !a.acknowledged).length;
+  const prevCountRef = useRef(unacknowledgedCount);
+
+  useEffect(() => {
+    // If count increased, trigger animation
+    if (unacknowledgedCount > prevCountRef.current) {
+      setIsNewAlert(true);
+      const timer = setTimeout(() => setIsNewAlert(false), 2000); // Animate for 2 seconds
+      return () => clearTimeout(timer);
+    }
+    prevCountRef.current = unacknowledgedCount;
+  }, [unacknowledgedCount]);
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: '' },
@@ -46,13 +63,18 @@ export default function Navbar({ currentPage, setPage, onLogout }) {
               <button
                 key={item.id}
                 onClick={() => setPage(item.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium transition-all duration-300 text-sm whitespace-nowrap ${currentPage === item.id
+                className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium transition-all duration-300 text-sm whitespace-nowrap relative ${currentPage === item.id
                   ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg shadow-cyan-500/50'
                   : 'text-slate-300 hover:text-white hover:bg-slate-800/50'
                   }`}
               >
                 <span>{item.icon}</span>
                 <span>{item.label}</span>
+                {item.id === 'alerts' && unacknowledgedCount > 0 && (
+                  <span className={`absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-lg ring-2 ring-slate-900 ${isNewAlert ? 'animate-bounce' : ''}`}>
+                    {unacknowledgedCount > 9 ? '9+' : unacknowledgedCount}
+                  </span>
+                )}
               </button>
             ))}
           </div>
@@ -92,6 +114,11 @@ export default function Navbar({ currentPage, setPage, onLogout }) {
               >
                 <span>{item.icon}</span>
                 <span>{item.label}</span>
+                {item.id === 'alerts' && unacknowledgedCount > 0 && (
+                  <span className={`ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-lg ${isNewAlert ? 'animate-bounce' : ''}`}>
+                    {unacknowledgedCount > 9 ? '9+' : unacknowledgedCount}
+                  </span>
+                )}
               </button>
             ))}
 

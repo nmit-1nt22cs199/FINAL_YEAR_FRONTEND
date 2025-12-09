@@ -111,11 +111,11 @@ export default function Geofences() {
     };
 
     return (
-        <div className="flex-1 bg-slate-950 p-4 md:p-6 overflow-auto mt-20">
+        <div className="flex-1 bg-slate-950 p-4 md:p-6 overflow-auto md:mt-20">
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                 <div>
-                    <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">Geofences</h1>
+                    {/* <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">Geofences</h1> */}
                 </div>
                 <button
                     onClick={() => setShowCreateModal(true)}
@@ -169,18 +169,42 @@ export default function Geofences() {
                             </div>
 
                             {/* Details */}
-                            <div className="space-y-2 mb-4">
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-slate-400">Type:</span>
-                                    <span className="text-white capitalize">{geofence.type}</span>
+                            <div className="space-y-3 mb-4">
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="bg-slate-950/50 p-2 rounded-lg">
+                                        <span className="block text-xs text-slate-500 mb-1">Type</span>
+                                        <span className="text-sm text-cyan-400 font-medium capitalize">{geofence.type}</span>
+                                    </div>
+                                    <div className="bg-slate-950/50 p-2 rounded-lg">
+                                        <span className="block text-xs text-slate-500 mb-1">Radius</span>
+                                        <span className="text-sm text-white font-medium">{geofence.radius}m</span>
+                                    </div>
                                 </div>
-                                {geofence.type === 'circle' && (
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-slate-400">Radius:</span>
-                                        <span className="text-white">{geofence.radius}m</span>
+
+                                {geofence.type === 'circle' && geofence.center && (
+                                    <div className="bg-slate-950/50 p-3 rounded-lg border border-slate-800/50">
+                                        <span className="block text-xs text-slate-500 mb-2">Coordinates</span>
+                                        <div className="flex justify-between items-center text-sm">
+                                            <div>
+                                                <span className="text-slate-400 mr-2">Lat:</span>
+                                                <span className="text-emerald-400 font-mono">{geofence.center.lat.toFixed(6)}</span>
+                                            </div>
+                                            <div>
+                                                <span className="text-slate-400 mr-2">Lng:</span>
+                                                <span className="text-emerald-400 font-mono">{geofence.center.lng.toFixed(6)}</span>
+                                            </div>
+                                        </div>
                                     </div>
                                 )}
-                                <div className="flex justify-between text-sm">
+
+                                <div className="flex justify-between text-sm py-1 border-b border-slate-800/50">
+                                    <span className="text-slate-400">Created At:</span>
+                                    <span className="text-slate-300">
+                                        {new Date(geofence.createdAt).toLocaleDateString()}
+                                    </span>
+                                </div>
+
+                                <div className="flex justify-between text-sm py-1 border-b border-slate-800/50">
                                     <span className="text-slate-400">Alerts:</span>
                                     <span className="text-white">
                                         {geofence.alertOnEntry && geofence.alertOnExit ? 'Entry & Exit' :
@@ -189,7 +213,10 @@ export default function Geofences() {
                                     </span>
                                 </div>
                                 {geofence.description && (
-                                    <p className="text-sm text-slate-400 mt-2">{geofence.description}</p>
+                                    <div className="pt-1">
+                                        <span className="block text-xs text-slate-500 mb-1">Description</span>
+                                        <p className="text-sm text-slate-300 italic">{geofence.description}</p>
+                                    </div>
                                 )}
                             </div>
 
@@ -198,23 +225,24 @@ export default function Geofences() {
                                 <button
                                     onClick={() => handleToggle(geofence._id)}
                                     className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg transition-colors ${geofence.active
-                                            ? 'bg-slate-800 hover:bg-slate-700 text-slate-300'
-                                            : 'bg-green-500/20 hover:bg-green-500/30 text-green-400'
+                                        ? 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+                                        : 'bg-green-500/20 hover:bg-green-500/30 text-green-400'
                                         }`}
                                     title={geofence.active ? 'Deactivate' : 'Activate'}
                                 >
                                     <Power size={16} />
+                                    <span className="text-xs">{geofence.active ? 'Disable' : 'Enable'}</span>
                                 </button>
                                 <button
                                     onClick={() => handleEdit(geofence)}
-                                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors"
+                                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-cyan-400 rounded-lg transition-colors border border-slate-700"
                                     title="Edit"
                                 >
                                     <Edit2 size={16} />
                                 </button>
                                 <button
                                     onClick={() => handleDelete(geofence._id)}
-                                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg transition-colors"
+                                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-red-950/20 hover:bg-red-900/30 text-red-400 rounded-lg transition-colors border border-red-900/30"
                                     title="Delete"
                                 >
                                     <Trash2 size={16} />

@@ -20,6 +20,7 @@ export default function Alerts() {
   const [dismissed, setDismissed] = useState(new Set())
   const [filter, setFilter] = useState("all")
   const [vehicleFilter, setVehicleFilter] = useState("all")
+  const [categoryFilter, setCategoryFilter] = useState("all") // New category filter
   const [acknowledgingIds, setAcknowledgingIds] = useState(new Set())
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(10)
@@ -31,11 +32,25 @@ export default function Alerts() {
 
   const uniqueVehicles = [...new Set(allAlerts.map((a) => a.vehicleId))].sort()
 
+  const getAlertCategory = (type) => {
+    if (type.includes('geofence')) return 'geofence';
+    if (['high_temperature', 'low_fuel'].includes(type)) return 'health';
+    if (['overspeed', 'crash'].includes(type)) return 'safety';
+    return 'other';
+  };
+
   const filteredAlerts = allAlerts.filter((alert) => {
     if (filter === "unacknowledged" && alert.acknowledged) return false
     if (filter === "acknowledged" && !alert.acknowledged) return false
     if (vehicleFilter !== "all" && alert.vehicleId !== vehicleFilter) return false
     if (dismissed.has(alert._id)) return false
+
+    // Category Filter Logic
+    if (categoryFilter !== "all") {
+      const category = getAlertCategory(alert.type);
+      if (category !== categoryFilter) return false;
+    }
+
     return true
   })
 
@@ -51,6 +66,11 @@ export default function Alerts() {
 
   const handleVehicleFilterChange = (newVehicleFilter) => {
     setVehicleFilter(newVehicleFilter)
+    setCurrentPage(1)
+  }
+
+  const handleCategoryFilterChange = (newCategory) => {
+    setCategoryFilter(newCategory)
     setCurrentPage(1)
   }
 
@@ -215,7 +235,21 @@ export default function Alerts() {
             <Filter className="w-4 h-4 text-slate-400" />
             <span className="text-sm font-semibold text-slate-300">Filters</span>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+            <div className="flex flex-col gap-2">
+              <label className="text-xs font-medium text-slate-400">Category</label>
+              <select
+                value={categoryFilter}
+                onChange={(e) => handleCategoryFilterChange(e.target.value)}
+                className="px-3 py-2.5 text-sm bg-slate-900/50 border border-slate-700 text-slate-200 rounded-lg hover:border-slate-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+              >
+                <option value="all">All Categories</option>
+                <option value="geofence">Geofence (Location)</option>
+                <option value="health">Vehicle Health (Temp/Fuel)</option>
+                <option value="safety">Safety (Speed/Crash)</option>
+              </select>
+            </div>
+
             <div className="flex flex-col gap-2">
               <label className="text-xs font-medium text-slate-400">Status</label>
               <select
@@ -223,7 +257,7 @@ export default function Alerts() {
                 onChange={(e) => handleFilterChange(e.target.value)}
                 className="px-3 py-2.5 text-sm bg-slate-900/50 border border-slate-700 text-slate-200 rounded-lg hover:border-slate-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
               >
-                <option value="all">All Alerts</option>
+                <option value="all">All Statuses</option>
                 <option value="unacknowledged">Unacknowledged</option>
                 <option value="acknowledged">Acknowledged</option>
               </select>
