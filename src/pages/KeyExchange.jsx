@@ -159,7 +159,7 @@ export default function KeyExchange() {
     };
 
     return (
-        <div className="relative min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 px-4 pt-20 pb-24">
+        <div className="relative min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 px-4 pt-20 pb-24 mt-5 h-full">
             <div className="absolute inset-0 pointer-events-none">
                 <div className="absolute -top-24 -right-24 w-80 h-80 bg-cyan-500/10 blur-3xl rounded-full"></div>
                 <div className="absolute bottom-0 left-10 w-96 h-96 bg-blue-500/10 blur-3xl rounded-full"></div>
@@ -172,8 +172,7 @@ export default function KeyExchange() {
                         <ShieldCheck className="w-3.5 h-3.5" />
                         Secure Verification
                     </div>
-                    <h1 className="text-3xl sm:text-4xl font-bold text-white">Verify & Unlock</h1>
-                    <p className="text-slate-400 mt-2">Location-locked cash transfer confirmation.</p>
+                   
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-6">

@@ -119,7 +119,7 @@ export default function UserManagement() {
     }
 
     return (
-        <div className="relative min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 pb-24 pt-20">
+        <div className="relative min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 pb-24 pt-20 mt-5 h-full">
             <div className="absolute inset-0 pointer-events-none">
                 <div className="absolute -top-20 right-0 w-80 h-80 bg-cyan-500/10 blur-3xl rounded-full"></div>
                 <div className="absolute bottom-0 left-10 w-96 h-96 bg-blue-500/10 blur-3xl rounded-full"></div>
@@ -127,7 +127,7 @@ export default function UserManagement() {
             </div>
 
             <div className="relative z-10 max-w-7xl mx-auto px-6">
-                <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between mb-10">
+                <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between mb-10 ">
                     <div>
                         <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-cyan-500/10 border border-cyan-500/30 rounded-full text-cyan-300 text-xs tracking-wide mb-4">
                             <UserCog className="w-3.5 h-3.5" />

@@ -163,9 +163,7 @@ export default function TransferManagement({ setPage }) {
                             Secure Transit Control
                         </div>
                         <h1 className="text-3xl sm:text-4xl font-bold text-white">Cash Transfers</h1>
-                        <p className="text-slate-400 mt-2 max-w-2xl">
-                            Create and monitor verified handoffs. Share session ID and sender key with the receiver to complete verification.
-                        </p>
+                       
                     </div>
 
                     <div className="flex flex-wrap gap-3">
