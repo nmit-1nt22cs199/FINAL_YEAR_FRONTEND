@@ -16,7 +16,7 @@ import { VehicleProvider } from './context/VehicleContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 function AppContent() {
-  const [page, setPage] = useState('dashboard');
+  const [page, setPage] = useState('control-center');
   const { isAuthenticated, user, logout } = useAuth();
 
   // If not authenticated, we could redirect to login, OR show login page.
@@ -66,5 +66,4 @@ export default function App() {
     </AuthProvider>
   );
 }
-
 
