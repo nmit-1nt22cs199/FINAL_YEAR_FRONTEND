@@ -22,12 +22,17 @@ export default function Navbar({ currentPage, setPage, onLogout }) {
   }, [unacknowledgedCount]);
 
   const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: '' },
-    { id: 'register', label: 'Register', icon: '' },
+    // { id: 'dashboard', label: 'Dashboard', icon: '' },
+    { id: 'control-center', label: 'Control Center', icon: '' },
+    { id: 'safe-route', label: 'Safe Route', icon: '' },
+    { id: 'transfers', label: 'Transfers', icon: '' },
+    { id: 'key-exchange', label: 'Verify Key', icon: '' },
+    { id: 'users', label: 'Users', icon: '' },
+    // { id: 'register', label: 'Register Vehicle', icon: '' },
     { id: 'track', label: 'Live Tracking', icon: '' },
-    { id: 'geofences', label: 'Geofences', icon: '' },
-    { id: 'alerts', label: 'Alerts', icon: '' },
-    { id: 'history', label: 'History', icon: '' },
+    // { id: 'geofences', label: 'Geofences', icon: '' },
+    // { id: 'alerts', label: 'Alerts', icon: '' },
+    // { id: 'history', label: 'History', icon: '' },
   ];
 
   const handleNavClick = (pageId) => {

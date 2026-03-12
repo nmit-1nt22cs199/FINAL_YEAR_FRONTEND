@@ -6,56 +6,40 @@ import Alerts from './pages/Alerts';
 import History from './pages/History';
 import Geofences from './pages/Geofences';
 import Login from './pages/Login';
+import UserManagement from './pages/UserManagement';
+import TransferManagement from './pages/TransferManagement';
+import KeyExchange from './pages/KeyExchange';
+import SafeRoute from './pages/SafeRoute';
+import ControlCenter from './pages/ControlCenter';
 import Navbar from './components/Navbar';
 import { VehicleProvider } from './context/VehicleContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 
-export default function App() {
+function AppContent() {
   const [page, setPage] = useState('dashboard');
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const { isAuthenticated, user, logout } = useAuth();
 
-  // Check authentication status on mount
-  useEffect(() => {
-    const authStatus = localStorage.getItem('fleetMonitorAuth');
-    if (authStatus === 'true') {
-      setIsAuthenticated(true);
-    }
-    setIsLoading(false);
-  }, []);
+  // If not authenticated, we could redirect to login, OR show login page.
+  // The AuthProvider loads initial token from storage.
+  // But we have a legacy "Login.jsx" that handles its own auth state via props ideally?
+  // Let's integrate: if !isAuthenticated, show Login.
 
-  const handleLogin = () => {
-    localStorage.setItem('fleetMonitorAuth', 'true');
-    setIsAuthenticated(true);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('fleetMonitorAuth');
-    setIsAuthenticated(false);
-    setPage('dashboard'); // Reset to dashboard page
-  };
-
-  // Show loading state while checking auth
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-400 text-lg">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Show login page if not authenticated
   if (!isAuthenticated) {
-    return <Login onLogin={handleLogin} />;
+    return <Login onLogin={() => {
+      // The Login component handles the API call usually? 
+      // Wait, our new Login logic is inside AuthProvider's login() method.
+      // But the existing Login.jsx does its own thing.
+      // We should probably modify Login.jsx to use useAuth().login()
+      // For now, let's keep it simple: simpler Login.jsx which calls a prop that calls useAuth().login()
+      // Or simply:
+      window.location.reload(); // Quick fix to pick up the token from storage if Login set it
+    }} />;
   }
 
-  // Show main app if authenticated
   return (
     <VehicleProvider>
       <div className="flex flex-col h-screen">
-        <Navbar currentPage={page} setPage={setPage} onLogout={handleLogout} />
+        <Navbar currentPage={page} setPage={setPage} onLogout={logout} />
 
         {page === 'dashboard' && <Dashboard />}
         {page === 'register' && <RegisterVehicle />}
@@ -63,7 +47,24 @@ export default function App() {
         {page === 'alerts' && <Alerts />}
         {page === 'history' && <History />}
         {page === 'geofences' && <Geofences />}
+
+        {/* New Pages */}
+        {page === 'users' && <UserManagement />}
+        {page === 'transfers' && <TransferManagement setPage={setPage} />}
+        {page === 'key-exchange' && <KeyExchange />}
+        {page === 'safe-route' && <SafeRoute />}
+        {page === 'control-center' && <ControlCenter />}
       </div>
     </VehicleProvider>
   );
 }
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
+}
+
+

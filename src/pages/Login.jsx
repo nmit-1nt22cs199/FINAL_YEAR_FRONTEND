@@ -1,29 +1,34 @@
 import { useState } from 'react';
-import { Lock, User, AlertCircle } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { Lock, User, AlertCircle, Loader2 } from 'lucide-react';
 
-export default function Login({ onLogin }) {
-    const [username, setUsername] = useState('');
+export default function Login() {
+    const { login } = useAuth();
+    const [username, setUsername] = useState(''); // We use this as email for now based on backend logic? 
+    // Backend expects { email, password }.
+    // Login UI says "Username". 
+    // Let's assume username input actually takes email or we change label.
+    // The previous code had "username". 
+    // Let's change label to Email/Username.
+
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
         setIsLoading(true);
 
-        // Simulate a small delay for better UX
-        setTimeout(() => {
-            const adminUsername = import.meta.env.VITE_ADMIN_USERNAME;
-            const adminPassword = import.meta.env.VITE_ADMIN_PASSWORD;
-
-            if (username === adminUsername && password === adminPassword) {
-                onLogin();
-            } else {
-                setError('Invalid username or password');
-                setIsLoading(false);
-            }
-        }, 500);
+        try {
+            await login(email, password);
+            // Login successful -> State updates in App.jsx -> Redirects to Dashboard
+        } catch (err) {
+            setError(err.message || 'Invalid email or password');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -52,7 +57,7 @@ export default function Login({ onLogin }) {
                         <h1 className="text-3xl font-bold text-white mb-2 bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
                             Fleet Monitor
                         </h1>
-                        <p className="text-slate-400">Admin Login</p>
+                        <p className="text-slate-400">Secure Access</p>
                     </div>
 
                     {/* Error Message */}
@@ -65,24 +70,24 @@ export default function Login({ onLogin }) {
 
                     {/* Login Form */}
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        {/* Username Field */}
+                        {/* Email Field */}
                         <div className="space-y-2">
-                            <label htmlFor="username" className="block text-sm font-medium text-slate-300">
-                                Username
+                            <label htmlFor="email" className="block text-sm font-medium text-slate-300">
+                                Email Address
                             </label>
                             <div className="relative group">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <User className="w-5 h-5 text-slate-400 group-focus-within:text-cyan-400 transition-colors" />
                                 </div>
                                 <input
-                                    id="username"
+                                    id="email"
                                     type="text"
-                                    value={username}
-                                    onChange={(e) => setUsername(e.target.value)}
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
                                     className="w-full pl-10 pr-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all"
-                                    placeholder="Enter your username"
+                                    placeholder="Enter your email"
                                     required
-                                    autoComplete="username"
+                                    autoComplete="email"
                                 />
                             </div>
                         </div>
@@ -117,12 +122,12 @@ export default function Login({ onLogin }) {
                         >
                             {isLoading ? (
                                 <>
-                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                    <Loader2 className="w-5 h-5 animate-spin" />
                                     <span>Signing in...</span>
                                 </>
                             ) : (
                                 <>
-                                    <Lock className="w-5 h-5" />
+                                    <ArrowRight className="w-5 h-5" />
                                     <span>Sign In</span>
                                 </>
                             )}
@@ -132,16 +137,32 @@ export default function Login({ onLogin }) {
                     {/* Footer */}
                     <div className="mt-6 pt-6 border-t border-slate-700/50">
                         <p className="text-center text-xs text-slate-500">
-                            Secure admin access to Fleet Management System
+                            Secure Fleet Management System
                         </p>
                     </div>
                 </div>
             </div>
-
-            {/* Decorative elements */}
-            <div className="absolute top-10 left-10 w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></div>
-            <div className="absolute bottom-10 right-10 w-2 h-2 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
-            <div className="absolute top-1/3 right-20 w-1 h-1 bg-purple-400 rounded-full animate-pulse" style={{ animationDelay: '2s' }}></div>
         </div>
+    );
+}
+
+// Icon helper if arrow right is missing from import
+function ArrowRight(props) {
+    return (
+        <svg
+            {...props}
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+        >
+            <path d="M5 12h14"></path>
+            <path d="m12 5 7 7-7 7"></path>
+        </svg>
     );
 }

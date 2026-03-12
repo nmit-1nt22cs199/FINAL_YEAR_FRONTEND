@@ -25,7 +25,7 @@ export default function RegisterVehicle() {
     { label: "Registration Number", name: "registrationNumber", placeholder: "e.g., KA02AB1234", type: "text" },
     { label: "Vehicle Model", name: "model", placeholder: "e.g., Tata Ace", type: "text" },
     { label: "Driver Name", name: "driverName", placeholder: "e.g., Ramesh Kumar", type: "text" },
-    { label: "Driver Phone", name: "driverPhone", placeholder: "e.g., 9876543210", type: "tel", pattern: "[0-9]{10}" },
+    { label: "Driver Phone", name: "driverPhone", placeholder: "e.g., 9876543210", type: "tel" },
     { label: "Driver Email", name: "email", placeholder: "e.g., driver@example.com", type: "email" }, // <-- Added
   ];
 
@@ -43,13 +43,27 @@ export default function RegisterVehicle() {
     setMessage({ type: '', text: '' });
 
     try {
+      const digitsOnly = formData.driverPhone.replace(/\D/g, '');
+      if (digitsOnly.length !== 10) {
+        setMessage({ type: 'error', text: 'Driver phone must be exactly 10 digits.' });
+        setLoading(false);
+        return;
+      }
+
+      const payload = { ...formData, driverPhone: digitsOnly };
+
       const response = await fetch(`${API_BASE}/vehicles`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(payload)
       });
 
-      const data = await response.json();
+      let data = null;
+      try {
+        data = await response.json();
+      } catch {
+        data = null;
+      }
 
       if (response.ok) {
         setMessage({ type: 'success', text: 'Vehicle registered successfully!' });
@@ -64,7 +78,7 @@ export default function RegisterVehicle() {
         });
 
       } else {
-        setMessage({ type: 'error', text: data.message || 'Failed to register vehicle' });
+        setMessage({ type: 'error', text: data?.error || data?.message || 'Failed to register vehicle' });
       }
     } catch (error) {
       setMessage({ type: 'error', text: 'Network error. Please try again.' });

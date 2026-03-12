@@ -8,17 +8,21 @@ const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3000') +
 // It uses the browser fetch API and returns { data } on success or
 // { data: [] } on error so components don't crash.
 export const API = {
-  get: async (path) => {
+  get: async (path, token = null) => {
     try {
       // Build full URL - if path starts with /, remove it
       const cleanPath = path.startsWith('/') ? path.slice(1) : path;
       const url = `${API_BASE_URL}/${cleanPath}`;
 
       console.log(`🌐 API.get calling: ${url}`);
-      const res = await fetch(url, { credentials: 'same-origin' });
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const res = await fetch(url, { headers });
 
       if (!res.ok) {
         console.warn('API.get non-ok response', url, res.status);
+        if (res.status === 401 || res.status === 403) return { error: 'Unauthorized' };
         return getDummyFor(path);
       }
 
@@ -26,7 +30,8 @@ export const API = {
       console.log(` API.get success:`, data);
 
       // If backend returns empty array/object, fallback to dummy data to keep UI alive while offline
-      if (!data || (Array.isArray(data) && data.length === 0)) return getDummyFor(path);
+      // BUT ONLY for specific monitoring routes, not for critical transfer logic
+      if ((!data || (Array.isArray(data) && data.length === 0)) && isMonitoringRoute(path)) return getDummyFor(path);
       return { data };
     } catch (err) {
       console.error(' API.get error', err);
@@ -34,7 +39,119 @@ export const API = {
       return getDummyFor(path);
     }
   },
+
+  post: async (path, body, token = null) => {
+    try {
+      const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+      const url = `${API_BASE_URL}/${cleanPath}`;
+
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      console.log(`POST calling: ${url}`);
+      const res = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(body),
+      });
+
+      // Safe JSON parse — handles Render cold starts or unexpected HTML responses
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error('Server returned an unexpected response. Please try again.');
+      }
+      // Backend uses { error: '...' } field (not 'message')
+      if (!res.ok) throw new Error(data.error || data.message || 'Login failed. Please try again.');
+      return data;
+    } catch (err) {
+      console.error('API.post error', err);
+      throw err;
+    }
+  },
+
+  put: async (path, body, token = null) => {
+    try {
+      const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+      const url = `${API_BASE_URL}/${cleanPath}`;
+
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const res = await fetch(url, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify(body),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'API Error');
+      return data;
+    } catch (err) {
+      console.error('API.put error', err);
+      throw err;
+    }
+  }
 };
+
+function isMonitoringRoute(path) {
+  return path.includes('get-locations') || path.includes('get-alerts') || path.includes('get-history');
+}
+
+// --- Auth & User Management ---
+export async function registerUser(userData) {
+  return API.post('/users/register', userData);
+}
+
+export async function loginUser(credentials) {
+  return API.post('/users/login', credentials);
+}
+
+export async function getUsers(token) {
+  return API.get('/users', token);
+}
+
+export async function getVehicles() {
+  return API.get('/vehicles');
+}
+
+export async function assignVehicle(assignmentData, token) {
+  // assignmentData: { userId, vehicleId }
+  return API.post('/users/assign', assignmentData, token);
+}
+
+export async function unassignVehicle(userId, token) {
+  return API.post(`/users/unassign/${userId}`, {}, token);
+}
+
+// --- Cash Transfer Operations ---
+export async function initiateTransfer(transferData, token) {
+  // transferData: { receiverId, vehicleId }
+  return API.post('/transfer/initiate', transferData, token);
+}
+
+export async function verifyTransfer(verificationData, token) {
+  // verificationData: { sessionId, key }
+  return API.post('/transfer/verify', verificationData, token);
+}
+
+export async function getActiveSessions(token) {
+  return API.get('/transfer/active', token);
+}
+
+export async function getMySessions(token) {
+  return API.get('/transfer/my', token);
+}
+
+export async function getTransferHistory(vehicleId, token) {
+  return API.get(`/transfer/history/${vehicleId}`, token);
+}
+
+export async function cancelTransfer(sessionId, token) {
+  return API.post(`/transfer/cancel/${sessionId}`, {}, token);
+}
+
 
 // Helper for other ad-hoc calls if you want to extend later
 export async function fetchVehicles() {

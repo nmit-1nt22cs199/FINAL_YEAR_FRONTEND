@@ -86,6 +86,31 @@ export function VehicleProvider({ children }) {
             );
         });
 
+        // --- CASH TRANSFER EVENTS ---
+        socket.on('transfer_initiated', (data) => {
+            console.log('[VehicleContext] 💰 Transfer Initiated:', data);
+            // Optionally add to alerts or just a toast
+        });
+
+        socket.on('transfer_verified', (data) => {
+            console.log('[VehicleContext] ✅ Transfer Verified:', data);
+        });
+
+        socket.on('unlock', (data) => {
+            console.log('[VehicleContext] 🔓 UNLOCK COMMAND:', data);
+            // Trigger some UI feedback
+            const unlockAlert = {
+                _id: Date.now().toString(),
+                type: 'Unlock',
+                message: `Unlock command sent to vehicle ${data.vehicleId}`,
+                level: 'success',
+                timestamp: new Date().toISOString(),
+                vehicleId: data.vehicleId
+            };
+            setAlerts(prev => [unlockAlert, ...prev]);
+        });
+
+
         socket.on('disconnect', () => {
             console.log('[VehicleContext] ❌ Socket disconnected');
         });

@@ -36,6 +36,7 @@ export default function Alerts() {
     if (type.includes('geofence')) return 'geofence';
     if (['high_temperature', 'low_fuel'].includes(type)) return 'health';
     if (['overspeed', 'crash'].includes(type)) return 'safety';
+    if (['unexpected_stop', 'route_deviation', 'unauthorized_door', 'tamper_detected'].includes(type)) return 'anomaly';
     return 'other';
   };
 
@@ -247,6 +248,7 @@ export default function Alerts() {
                 <option value="geofence">Geofence (Location)</option>
                 <option value="health">Vehicle Health (Temp/Fuel)</option>
                 <option value="safety">Safety (Speed/Crash)</option>
+                <option value="anomaly">Anomaly (Stop/Deviation/Door/Tamper)</option>
               </select>
             </div>
 
