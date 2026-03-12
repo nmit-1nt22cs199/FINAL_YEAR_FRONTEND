@@ -263,7 +263,7 @@ export default function ControlCenter() {
     };
 
     return (
-        <div className="h-full bg-slate-950 overflow-hidden flex flex-col lg:flex-row pt-16">
+        <div className="h-full bg-slate-950 overflow-hidden flex flex-col lg:flex-row pt-16 mt-4">
             {/* Left Sidebar — Vehicles */}
             <div className="w-full lg:w-[300px] xl:w-[340px] flex-shrink-0 overflow-y-auto border-r border-slate-800/50 bg-slate-950/80 backdrop-blur-sm">
                 {/* Header */}
