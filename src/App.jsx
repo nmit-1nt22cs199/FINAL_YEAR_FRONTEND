@@ -19,20 +19,10 @@ function AppContent() {
   const [page, setPage] = useState('control-center');
   const { isAuthenticated, user, logout } = useAuth();
 
-  // If not authenticated, we could redirect to login, OR show login page.
-  // The AuthProvider loads initial token from storage.
-  // But we have a legacy "Login.jsx" that handles its own auth state via props ideally?
-  // Let's integrate: if !isAuthenticated, show Login.
 
   if (!isAuthenticated) {
     return <Login onLogin={() => {
-      // The Login component handles the API call usually? 
-      // Wait, our new Login logic is inside AuthProvider's login() method.
-      // But the existing Login.jsx does its own thing.
-      // We should probably modify Login.jsx to use useAuth().login()
-      // For now, let's keep it simple: simpler Login.jsx which calls a prop that calls useAuth().login()
-      // Or simply:
-      window.location.reload(); // Quick fix to pick up the token from storage if Login set it
+      window.location.reload(); 
     }} />;
   }
 

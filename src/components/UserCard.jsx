@@ -1,6 +1,6 @@
 import { Shield, Truck, User as UserIcon, Lock } from 'lucide-react';
 
-export default function UserCard({ user, onAssign, onUnassign }) {
+export default function UserCard({ user, onAssign, onUnassign, isAdmin }) {
     const getRoleIcon = (role) => {
         switch (role) {
             case 'admin': return <Shield className="w-4 h-4" />;
@@ -21,20 +21,18 @@ export default function UserCard({ user, onAssign, onUnassign }) {
     };
 
     return (
-        <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-800 rounded-lg p-4 hover:border-cyan-500/30 transition-all">
+        <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-800 rounded-lg p-4 hover:border-cyan-500/30 transition-all flex flex-col justify-between h-full">
             <div className="flex justify-between items-start">
                 <div className="flex items-center gap-3">
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center ${getRoleColor(user.role)}`}>
                         {getRoleIcon(user.role)}
                     </div>
                     <div>
-                        <h3 className="font-semibold text-white">{user.name || user.username || user.email}</h3>
+                        <h3 className="font-semibold text-white truncate max-w-[150px]">{user.name || user.username || user.email}</h3>
                         <div className="flex items-center gap-2 text-xs text-slate-400">
                             <span className={`px-2 py-0.5 rounded-full border text-[10px] uppercase font-bold ${getRoleColor(user.role)}`}>
                                 {user.role}
                             </span>
-                            <span>•</span>
-                            <span>{user.email}</span>
                         </div>
                     </div>
                 </div>
@@ -42,31 +40,35 @@ export default function UserCard({ user, onAssign, onUnassign }) {
 
             <div className="mt-4 pt-4 border-t border-slate-800/50">
                 <div className="flex items-center justify-between">
-                    <div>
-                        <span className="text-xs text-slate-500 block mb-1">Vehicle Assignment</span>
-                        <span className="text-sm font-medium text-slate-300">
-                            {user.assignedVehicle ? (
-                                <span className="text-cyan-400">{user.assignedVehicle.registrationNumber}</span>
+                    <div className="flex-1">
+                        <span className="text-[10px] text-slate-500 uppercase tracking-wider block mb-0.5">Assigned Vehicle</span>
+                        <div className="flex items-center gap-2">
+                             {user.assignedVehicle ? (
+                                <span className="text-sm font-bold text-cyan-400">
+                                    {user.assignedVehicle.registrationNumber || user.assignedVehicle.vehicleId || 'Active'}
+                                </span>
                             ) : (
-                                'Unassigned'
+                                <span className="text-xs text-slate-600 italic">None</span>
                             )}
-                        </span>
+                        </div>
                     </div>
 
-                    {user.assignedVehicle ? (
-                        <button
-                            onClick={() => onUnassign(user._id)}
-                            className="text-xs px-3 py-1.5 rounded-md bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 transition-colors"
-                        >
-                            Unassign
-                        </button>
-                    ) : (
-                        <button
-                            onClick={() => onAssign(user)}
-                            className="text-xs px-3 py-1.5 rounded-md bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 border border-cyan-500/20 transition-colors"
-                        >
-                            Assign Vehicle
-                        </button>
+                    {isAdmin && (
+                        user.assignedVehicle ? (
+                            <button
+                                onClick={() => onUnassign(user._id)}
+                                className="text-[10px] px-2 py-1 rounded-md bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20 transition-all uppercase font-bold"
+                            >
+                                Unassign
+                            </button>
+                        ) : (
+                            <button
+                                onClick={() => onAssign(user)}
+                                className="text-[10px] px-2 py-1 rounded-md bg-cyan-500/10 text-cyan-400 hover:bg-cyan-400/20 border border-cyan-500/20 transition-all uppercase font-bold"
+                            >
+                                Assign
+                            </button>
+                        )
                     )}
                 </div>
             </div>

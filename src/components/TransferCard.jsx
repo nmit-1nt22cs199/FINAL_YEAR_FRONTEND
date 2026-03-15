@@ -92,7 +92,7 @@ export default function TransferCard({ transfer, role, onVerify, onCancel }) {
                         </button>
                     )}
 
-                    {(role === 'receiver' || role === 'admin') && (transfer.status === 'pending' || transfer.status === 'in-progress') && (
+                    {(role === 'receiver') && (transfer.status === 'pending' || transfer.status === 'in-progress') && (
                         <button
                             onClick={() => onVerify(transfer._id)}
                             className="text-xs px-3 py-1.5 rounded-md bg-green-500/10 text-green-400 hover:bg-green-500/20 border border-green-500/20 transition-colors flex items-center gap-1.5"

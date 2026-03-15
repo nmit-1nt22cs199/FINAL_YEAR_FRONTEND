@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import { Calendar, MapPin, Clock, Route, TrendingUp } from "lucide-react";
 import HistoryMap from "../components/HistoryMap";
 import { API } from "../api/api";
+import useVehicleData from "../useVehicleData";
 
 export default function History() {
-  const [vehicles, setVehicles] = useState([]);
+  const { vehicles: contextVehicles } = useVehicleData();
   const [selectedVehicle, setSelectedVehicle] = useState("");
   const [selectedDays, setSelectedDays] = useState(0); // Default to Today
   const [history, setHistory] = useState([]);
@@ -12,23 +13,12 @@ export default function History() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Fetch vehicles list on mount
+  // Set default selected vehicle from context
   useEffect(() => {
-    const fetchVehicles = async () => {
-      try {
-        const res = await API.get("/vehicles");
-        const vehicleList = res.data?.data || res.data || [];
-        setVehicles(Array.isArray(vehicleList) ? vehicleList : []);
-
-        if (Array.isArray(vehicleList) && vehicleList.length > 0) {
-          setSelectedVehicle(vehicleList[0].vehicleId);
-        }
-      } catch (err) {
-        console.error("❌ Error fetching vehicles:", err);
-      }
-    };
-    fetchVehicles();
-  }, []);
+    if (contextVehicles && contextVehicles.length > 0 && !selectedVehicle) {
+      setSelectedVehicle(contextVehicles[0].vehicleId);
+    }
+  }, [contextVehicles]);
 
   // Fetch history when vehicle or days changes
   useEffect(() => {
@@ -99,10 +89,10 @@ export default function History() {
                 onChange={(e) => setSelectedVehicle(e.target.value)}
                 className="flex-1 sm:flex-none px-3 py-2 text-sm bg-slate-900/50 border border-slate-700 text-slate-200 rounded-lg hover:border-slate-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
               >
-                {vehicles.length === 0 ? (
+                {contextVehicles.length === 0 ? (
                   <option>No vehicles available</option>
                 ) : (
-                  vehicles.map((v) => (
+                  contextVehicles.map((v) => (
                     <option key={v.vehicleId} value={v.vehicleId}>
                       {v.vehicleId}
                     </option>

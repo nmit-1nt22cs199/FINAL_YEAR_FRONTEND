@@ -1,16 +1,56 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { connectSocket } from '../socketConnection';
+import { useAuth } from './AuthContext';
+import { getMySessions } from '../api/api';
 
 const API_BASE = import.meta.env.VITE_API_URL + '/api';
 
 const VehicleContext = createContext(null);
 
 export function VehicleProvider({ children }) {
+    const { user, role, token } = useAuth();
     const [vehicles, setVehicles] = useState([]);
     const [telemetry, setTelemetry] = useState([]);
     const [alerts, setAlerts] = useState([]);
+    const [sessions, setSessions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    // Fetch alerts-related sessions for non-admins
+    useEffect(() => {
+        if (role && role !== 'admin' && token) {
+            getMySessions(token).then(res => {
+                if (res?.data?.data) {
+                    setSessions(res.data.data);
+                }
+            }).catch(err => console.error("Failed to fetch sessions for alert filtering", err));
+        }
+    }, [role, token]);
+
+    // Derive accessible vehicle IDs (string IDs like 'VEH-001')
+    const accessibleVehicleIds = role === 'admin' ? null : (() => {
+        const ids = new Set();
+        // Add vehicles from active sessions
+        sessions.forEach(s => {
+            if (s.status === 'in-progress' || s.status === 'pending') {
+                // We need the string vehicleId. Assuming s.vehicleId is populated or we can match it.
+                // If s.vehicleId is an object (populated), use s.vehicleId.vehicleId
+                // If it's an ID, we'll need to find it in the vehicles list.
+                const vId = typeof s.vehicleId === 'object' ? s.vehicleId.vehicleId : null;
+                if (vId) ids.add(vId);
+                else {
+                    // Search in vehicles state by _id
+                    const v = vehicles.find(v => v._id === s.vehicleId);
+                    if (v) ids.add(v.vehicleId);
+                }
+            }
+        });
+        return Array.from(ids);
+    })();
+
+    const filteredAlerts = role === 'admin' || !accessibleVehicleIds
+        ? alerts
+        : alerts.filter(a => accessibleVehicleIds.includes(a.vehicleId));
 
     useEffect(() => {
         // Fetch initial data from REST API
@@ -87,13 +127,29 @@ export function VehicleProvider({ children }) {
         });
 
         // --- CASH TRANSFER EVENTS ---
+        const refreshSessions = () => {
+            if (role && role !== 'admin' && token) {
+                getMySessions(token).then(res => {
+                    if (res?.data?.data) {
+                        setSessions(res.data.data);
+                    }
+                }).catch(err => console.error("Failed to refresh sessions", err));
+            }
+        };
+
         socket.on('transfer_initiated', (data) => {
             console.log('[VehicleContext] 💰 Transfer Initiated:', data);
-            // Optionally add to alerts or just a toast
+            refreshSessions();
         });
 
         socket.on('transfer_verified', (data) => {
             console.log('[VehicleContext] ✅ Transfer Verified:', data);
+            refreshSessions();
+        });
+
+        socket.on('transfer_status', (data) => {
+            console.log('[VehicleContext] 💰 Transfer Status Update:', data);
+            refreshSessions();
         });
 
         socket.on('unlock', (data) => {
@@ -173,11 +229,20 @@ export function VehicleProvider({ children }) {
         }
     };
 
+    const filteredVehicles = role === 'admin' || !accessibleVehicleIds
+        ? vehiclesWithTelemetry
+        : vehiclesWithTelemetry.filter(v => accessibleVehicleIds.includes(v.vehicleId));
+
+    const filteredTelemetry = role === 'admin' || !accessibleVehicleIds
+        ? telemetry
+        : telemetry.filter(t => accessibleVehicleIds.includes(t.vehicleId));
+
     const value = {
-        vehicles: vehiclesWithTelemetry,
+        vehicles: filteredVehicles,
         rawVehicles: vehicles,
-        telemetry,
-        alerts,
+        telemetry: filteredTelemetry,
+        alerts: filteredAlerts,
+        accessibleVehicleIds,
         loading,
         error,
         acknowledgeAlert

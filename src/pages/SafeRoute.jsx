@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { assignRoute, getRoutes, cancelRoute, completeRoute } from "../api/routeApi";
+import { useAuth } from "../context/AuthContext";
 import { MapPin, Navigation, Truck, Route, CheckCircle, XCircle, Loader2, Shield } from "lucide-react";
 
 const API_BASE = import.meta.env.VITE_API_URL + "/api";
@@ -20,6 +21,7 @@ function decodePolyline(encoded) {
 }
 
 export default function SafeRoute() {
+    const { role } = useAuth();
     const mapRef = useRef(null);
     const mapInstanceRef = useRef(null);
     const olaRef = useRef(null);
@@ -468,11 +470,13 @@ export default function SafeRoute() {
                             {/* Find Route Button */}
                             <button
                                 onClick={handleFindRoute}
-                                disabled={loading}
+                                disabled={loading || role === 'receiver'}
                                 className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-emerald-500/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                             >
                                 {loading ? (
                                     <><Loader2 className="w-4 h-4 animate-spin" /> Finding Safest Route...</>
+                                ) : role === 'receiver' ? (
+                                    <><Shield className="w-4 h-4" /> View Only Access</>
                                 ) : (
                                     <><Navigation className="w-4 h-4" /> Find & Assign Safe Route</>
                                 )}
@@ -544,7 +548,7 @@ export default function SafeRoute() {
                                                 <span>{new Date(route.createdAt).toLocaleDateString()}</span>
                                             </div>
                                         </div>
-                                        {(route.status === "assigned" || route.status === "in-progress") && (
+                                        {(route.status === "assigned" || route.status === "in-progress") && role !== 'receiver' && (
                                             <div className="flex gap-2 mt-3">
                                                 <button
                                                     onClick={() => handleCompleteRoute(route._id)}

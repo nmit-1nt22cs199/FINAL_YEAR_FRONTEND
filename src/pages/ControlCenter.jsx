@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { connectSocket } from "../socketConnection";
 import { fetchGeofences } from "../api/geofenceApi";
 import { getRoutes } from "../api/routeApi";
+import useVehicleData from "../useVehicleData";
 import {
     Activity, AlertTriangle, Truck, Fuel, Thermometer,
     MapPin, Navigation, Shield, Radio, DoorOpen, Vibrate, Bell
@@ -25,55 +26,20 @@ function decodePolyline(encoded) {
 }
 
 export default function ControlCenter() {
+    const { vehicles, alerts: contextAlerts, loading: contextLoading, accessibleVehicleIds } = useVehicleData();
     const mapRef = useRef(null);
     const mapInstanceRef = useRef(null);
     const olaRef = useRef(null);
     const markersRef = useRef(new Map());
     const routeLayersRef = useRef(new Set());
 
-    const [vehicles, setVehicles] = useState([]);
-    const [alerts, setAlerts] = useState([]);
     const [activeRoutes, setActiveRoutes] = useState([]);
     const [selectedVehicle, setSelectedVehicle] = useState(null);
     const [isMapLoaded, setIsMapLoaded] = useState(false);
 
-    // Fetch initial data
-    useEffect(() => {
-        const load = async () => {
-            try {
-                const [vRes, tRes, aRes] = await Promise.all([
-                    fetch(`${API_BASE}/vehicles`).then(r => r.json()),
-                    fetch(`${API_BASE}/telemetry`).then(r => r.json()),
-                    fetch(`${API_BASE}/alerts`).then(r => r.json())
-                ]);
-
-                const vehicleData = vRes.data || [];
-                const telemetryData = tRes.data || [];
-                const combined = vehicleData.map(v => {
-                    const t = telemetryData.find(tel => tel.vehicleId === v.vehicleId);
-                    return {
-                        vehicleId: v.vehicleId,
-                        registrationNumber: v.registrationNumber,
-                        model: v.model,
-                        driverName: v.driverName,
-                        location: t?.location || null,
-                        speed: t?.speed || 0,
-                        temperature: t?.temperature || 0,
-                        fuel: t?.fuel || 0,
-                        ignition: t?.ignition || false,
-                        doorStatus: t?.doorStatus || null,
-                        vibration: t?.vibration || 0,
-                        motion: t?.motion || false,
-                        offline: false
-                    };
-                }).filter(v => v.location);
-
-                setVehicles(combined);
-                setAlerts((aRes.data || []).slice(0, 50));
-            } catch (e) { console.error(e); }
-        };
-        load();
-    }, []);
+    const filteredActiveRoutes = !accessibleVehicleIds 
+        ? activeRoutes 
+        : activeRoutes.filter(r => accessibleVehicleIds.includes(r.vehicleId));
 
     // Fetch active routes
     useEffect(() => {
@@ -91,43 +57,15 @@ export default function ControlCenter() {
         return () => clearInterval(interval);
     }, []);
 
-    // Socket connection
+    // Socket connection for other events if any
     useEffect(() => {
         const socket = connectSocket();
-
-        socket.on('vehicle:telemetry', (data) => {
-            setVehicles(prev => {
-                const existing = prev.find(v => v.vehicleId === data.vehicleId);
-                if (existing) {
-                    return prev.map(v =>
-                        v.vehicleId === data.vehicleId
-                            ? { ...v, location: data.location || v.location, speed: data.speed ?? v.speed, temperature: data.temperature ?? v.temperature, fuel: data.fuel ?? v.fuel, doorStatus: data.doorStatus ?? v.doorStatus, vibration: data.vibration ?? v.vibration, offline: false }
-                            : v
-                    );
-                } else if (data.location) {
-                    return [...prev, { vehicleId: data.vehicleId, location: data.location, speed: data.speed || 0, temperature: data.temperature || 0, fuel: data.fuel || 0, doorStatus: data.doorStatus || null, vibration: data.vibration || 0, offline: false }];
-                }
-                return prev;
-            });
-        });
-
-        socket.on('vehicle_update', (data) => {
-            setVehicles(prev => prev.map(v =>
-                v.vehicleId === data.vehicleId
-                    ? { ...v, location: data.location || v.location, speed: data.speed ?? v.speed, temperature: data.temperature ?? v.temperature, offline: false }
-                    : v
-            ));
-        });
-
+        
+        // alert_triggered might be legacy or specific to this page
         socket.on('alert_triggered', (alert) => {
-            setAlerts(prev => [alert, ...prev].slice(0, 50));
-        });
-
-        socket.on('vehicle:alert', (alert) => {
-            setAlerts(prev => {
-                if (prev.find(a => a._id === alert._id)) return prev;
-                return [alert, ...prev].slice(0, 50);
-            });
+            // We'll let VehicleContext handle the main alerts list, 
+            // but if we want local state for high-priority notification we could keep it.
+            // For now, let's just rely on the context.
         });
 
         return () => socket.disconnect();
@@ -203,7 +141,7 @@ export default function ControlCenter() {
         });
         routeLayersRef.current.clear();
 
-        activeRoutes.forEach(route => {
+        filteredActiveRoutes.forEach(route => {
             if (!route.encodedPolyline) return;
             const layerId = `route-${route._id}`;
             const coords = decodePolyline(route.encodedPolyline);
@@ -229,7 +167,7 @@ export default function ControlCenter() {
                 routeLayersRef.current.add(layerId);
             } catch (e) { console.error(e); }
         });
-    }, [activeRoutes, isMapLoaded]);
+    }, [filteredActiveRoutes, isMapLoaded]);
 
     // Focus on selected vehicle
     useEffect(() => {
@@ -279,11 +217,11 @@ export default function ControlCenter() {
                             <p className="text-[10px] text-slate-400">Active</p>
                         </div>
                         <div className="text-center p-2 bg-slate-800/40 rounded-lg">
-                            <p className="text-lg font-bold text-amber-400">{alerts.filter(a => !a.acknowledged).length}</p>
+                            <p className="text-lg font-bold text-amber-400">{contextAlerts.filter(a => !a.acknowledged).length}</p>
                             <p className="text-[10px] text-slate-400">Alerts</p>
                         </div>
                         <div className="text-center p-2 bg-slate-800/40 rounded-lg">
-                            <p className="text-lg font-bold text-emerald-400">{activeRoutes.length}</p>
+                            <p className="text-lg font-bold text-emerald-400">{filteredActiveRoutes.length}</p>
                             <p className="text-[10px] text-slate-400">Routes</p>
                         </div>
                     </div>
@@ -294,7 +232,7 @@ export default function ControlCenter() {
                     {vehicles.map(v => {
                         const status = getVehicleStatus(v);
                         const isSelected = selectedVehicle === v.vehicleId;
-                        const activeRoute = activeRoutes.find(r => r.vehicleId === v.vehicleId);
+                        const activeRoute = filteredActiveRoutes.find(r => r.vehicleId === v.vehicleId);
 
                         return (
                             <button
@@ -363,10 +301,10 @@ export default function ControlCenter() {
                 <div ref={mapRef} className="w-full h-full min-h-[400px] lg:min-h-0" />
 
                 {/* Map overlay — Active routes legend */}
-                {activeRoutes.length > 0 && (
+                {filteredActiveRoutes.length > 0 && (
                     <div className="absolute top-4 left-4 bg-slate-900/90 backdrop-blur-sm border border-slate-700/50 rounded-xl p-3 text-xs">
                         <p className="text-slate-300 font-semibold mb-2">Active Routes</p>
-                        {activeRoutes.map(r => (
+                        {filteredActiveRoutes.map(r => (
                             <div key={r._id} className="flex items-center gap-2 text-slate-400 mb-1">
                                 <div className={`w-4 h-0.5 ${r.status === 'in-progress' ? 'bg-amber-400' : 'bg-emerald-400'}`} />
                                 <span>{r.vehicleId}</span>
@@ -384,19 +322,19 @@ export default function ControlCenter() {
                         <Bell className="w-4 h-4 text-amber-400" />
                         <h3 className="text-sm font-bold text-white">Live Alerts</h3>
                         <span className="ml-auto text-[10px] px-1.5 py-0.5 bg-red-500/20 text-red-300 rounded-full">
-                            {alerts.filter(a => !a.acknowledged).length}
+                            {contextAlerts.filter(a => !a.acknowledged).length}
                         </span>
                     </div>
                 </div>
 
                 <div className="p-2 space-y-1">
-                    {alerts.length === 0 ? (
+                    {contextAlerts.length === 0 ? (
                         <div className="text-center py-8">
                             <Bell className="w-8 h-8 text-slate-600 mx-auto mb-2" />
                             <p className="text-slate-500 text-xs">No alerts</p>
                         </div>
                     ) : (
-                        alerts.map((alert, i) => (
+                        contextAlerts.slice(0, 50).map((alert, i) => (
                             <div
                                 key={alert._id || i}
                                 className={`p-2.5 rounded-lg border-l-2 ${alertLevelColor(alert.level)} ${alert.acknowledged ? 'opacity-50' : ''} transition-all`}
